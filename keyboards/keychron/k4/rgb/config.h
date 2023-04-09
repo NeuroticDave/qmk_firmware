@@ -21,7 +21,7 @@
 #define VENDOR_ID       0x3434
 
 #define MANUFACTURER    "Keychron"
-#define PRODUCT         "K4v2 RGB"
+#define PRODUCT         "K4v1 RGB"
 
 /* key matrix size */
 #define MATRIX_ROWS 6
@@ -39,7 +39,8 @@
 #define DEBOUNCE 5
 
 /* LED Status indicators */
-#define LED_CAPS_LOCK_PIN B9
+#define LED_CAPS_LOCK_PIN B12
+#define LED_NUM_LOCK_PIN  D4
 #define LED_PIN_ON_STATE  1
 
 /* RGB LED Config */
