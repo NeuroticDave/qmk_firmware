@@ -3,6 +3,8 @@ MCU = SN32F248BF
 
 BOOTLOADER = sn32-dfu
 
+TOP_SYMBOLS = yes
+
 # Build Options
 #   comment out to disable the options.
 #
@@ -28,19 +30,11 @@ DIP_SWITCH_ENABLE = yes
 RGB_MATRIX_ENABLE = yes
 RGB_MATRIX_DRIVER = SN32F24xB
 
-#LTO_ENABLE = no
+LTO_ENABLE = yes
 SLEEP_LED_ENABLE = no
 RGBLIGHT_ENABLE = no
 SERIAL_LINK_ENABLE = no
 CUSTOM_MATRIX = yes
-
-# Temp Memory Fixes
-LTO_ENABLE = yes
-QMK_SETTINGS = no
-TAP_DANCE_ENABLE = no
-COMBO_ENABLE = no
-KEY_OVERRIDE_ENABLE = no
-
 
 # Build iso by default
 DEFAULT_FOLDER = keychron/k4/rgb/iso
