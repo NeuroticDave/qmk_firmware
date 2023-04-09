@@ -21,7 +21,7 @@
 #define VENDOR_ID       0x3434
 
 #define MANUFACTURER    "Keychron"
-#define PRODUCT         "K4v1 RGB"
+#define PRODUCT         "K4v2 RGB"
 
 /* key matrix size */
 #define MATRIX_ROWS 6
@@ -37,6 +37,13 @@
 
 /* Debounce reduces chatter (unintended double-presses) - set 0 if debouncing is not needed */
 #define DEBOUNCE 5
+
+/* Enable RGB */
+#define WEAR_LEVELING_SN32_EMULATION_PAGE_COUNT 49
+#define LAYER_STATE_8BIT
+#define DYNAMIC_KEYMAP_LAYER_COUNT 4
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1200
+#define VIA_QMK_RGBLIGHT_ENABLE
 
 /* LED Status indicators */
 #define LED_CAPS_LOCK_PIN B12
