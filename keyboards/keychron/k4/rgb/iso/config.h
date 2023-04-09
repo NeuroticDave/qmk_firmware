@@ -25,7 +25,7 @@
 /* Set ISO Keymap */
 #define KEYMAP_ISO 1
 
-/* VIA Config 
+/* VIA Config */
 #define LAYER_STATE_8BIT
 #define DYNAMIC_KEYMAP_LAYER_COUNT 3
-#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1200 */
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1200
