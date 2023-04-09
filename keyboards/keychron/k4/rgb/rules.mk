@@ -3,8 +3,6 @@ MCU = SN32F248BF
 
 BOOTLOADER = sn32-dfu
 
-TOP_SYMBOLS = yes
-
 # Build Options
 #   comment out to disable the options.
 #
