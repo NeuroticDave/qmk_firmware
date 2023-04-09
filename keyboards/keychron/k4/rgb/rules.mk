@@ -37,3 +37,5 @@ SERIAL_LINK_ENABLE = no
 
 # Build iso by default
 DEFAULT_FOLDER = keychron/k4/rgb/iso
+
+VIA_ENABLE = yes
