@@ -38,5 +38,5 @@ SERIAL_LINK_ENABLE = no
 # Build iso by default
 DEFAULT_FOLDER = keychron/k4/rgb/iso
 
-EEPROM_DRIVER = transient
+#EEPROM_DRIVER = transient
 VIA_ENABLE = yes
