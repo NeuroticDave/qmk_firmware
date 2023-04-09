@@ -47,8 +47,8 @@
 #define LED_NUM_LOCK_PIN  D4
 #define LED_PIN_ON_STATE  1
 
-/* Set EEPROM size 
-#define TRANSIENT_EEPROM_SIZE 1536 */
+/* Set EEPROM size  */
+#define TRANSIENT_EEPROM_SIZE 1236
 
 /* RGB LED Config */
 #define LED_MATRIX_ROWS MATRIX_ROWS
