@@ -27,6 +27,12 @@ bool process_record_kb(uint16_t keycode, keyrecord_t *record) {
             case BT_PROFILE1:
                 iton_bt_switch_profile(0);
                 break;
+            case BT_PROFILE2:
+                iton_bt_switch_profile(1);
+                break;
+            case BT_PROFILE3:
+                iton_bt_switch_profile(2);
+                break;
             case BT_PAIR:
                 iton_bt_enter_pairing();
                 break;
