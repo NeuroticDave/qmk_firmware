@@ -891,47 +891,6 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
 endif
 
 BLUETOOTH_ENABLE ?= no
-VALID_BLUETOOTH_DRIVER_TYPES := BluefruitLE RN42 custom
-ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
-    ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
-        $(call CATASTROPHIC_ERROR,Invalid BLUETOOTH_DRIVER,BLUETOOTH_DRIVER="$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
-    endif
-    OPT_DEFS += -DBLUETOOTH_ENABLE
-    NO_USB_STARTUP_CHECK := yes
-    COMMON_VPATH += $(DRIVER_PATH)/bluetooth
-    SRC += outputselect.c bluetooth.c
-
-    ifeq ($(strip $(BLUETOOTH_DRIVER)), BluefruitLE)
-        OPT_DEFS += -DBLUETOOTH_BLUEFRUIT_LE -DHAL_USE_SPI=TRUE
-        SRC += $(DRIVER_PATH)/bluetooth/bluefruit_le.cpp
-        QUANTUM_LIB_SRC += analog.c
-        QUANTUM_LIB_SRC += spi_master.c
-    endif
-
-    ifeq ($(strip $(BLUETOOTH_DRIVER)), RN42)
-        OPT_DEFS += -DBLUETOOTH_RN42 -DHAL_USE_SERIAL=TRUE
-        SRC += $(DRIVER_PATH)/bluetooth/rn42.c
-        QUANTUM_LIB_SRC += uart.c
-    endif
-endif
-
-ifeq ($(strip $(ENCODER_ENABLE)), yes)
-    SRC += $(QUANTUM_DIR)/encoder.c
-    OPT_DEFS += -DENCODER_ENABLE
-    ifeq ($(strip $(ENCODER_MAP_ENABLE)), yes)
-        OPT_DEFS += -DENCODER_MAP_ENABLE
-    endif
-endif
-
-ifeq ($(strip $(OS_DETECTION_ENABLE)), yes)
-    SRC += $(QUANTUM_DIR)/os_detection.c
-    OPT_DEFS += -DOS_DETECTION_ENABLE
-    ifeq ($(strip $(OS_DETECTION_DEBUG_ENABLE)), yes)
-        OPT_DEFS += -DOS_DETECTION_DEBUG_ENABLE
-    endif
-endif
-
-BLUETOOTH_ENABLE ?= no
 VALID_BLUETOOTH_DRIVER_TYPES := BluefruitLE RN42 ItonBT ItonBTLowMem custom
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
