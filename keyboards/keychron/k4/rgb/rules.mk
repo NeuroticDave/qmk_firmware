@@ -40,8 +40,7 @@ SERIAL_LINK_ENABLE = no
 DEFAULT_FOLDER = keychron/k4/rgb/iso
 
 # EEPROM driver
-EEPROM_DRIVER = wear_leveling
-WEAR_LEVELING_DRIVER = sn32_flash
+EEPROM_DRIVER = eeprom_sn32
 
 #EEPROM_DRIVER = transient
 VIA_ENABLE = yes
