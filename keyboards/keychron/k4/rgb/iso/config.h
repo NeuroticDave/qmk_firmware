@@ -21,3 +21,11 @@
 /* RGB LED Config */
 #define DRIVER_LED_TOTAL (101)
 #define RGB_MATRIX_LED_COUNT 101
+
+/* Set ISO Keymap */
+#define KEYMAP_ISO 1
+
+/* VIA Config */
+#define LAYER_STATE_8BIT
+#define DYNAMIC_KEYMAP_LAYER_COUNT 3
+#define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1200

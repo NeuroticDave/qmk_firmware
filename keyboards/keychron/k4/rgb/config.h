@@ -39,8 +39,7 @@
 #define DEBOUNCE 5
 
 /* Enable RGB */
-#define WEAR_LEVELING_SN32_EMULATION_PAGE_COUNT 49
-/* #define DYNAMIC_KEYMAP_EEPROM_MAX_ADDR 1200 */
+#define WEAR_LEVELING_SN32_EMULATION_PAGE_COUNT 24
 #define VIA_QMK_RGBLIGHT_ENABLE
 
 /* LED Status indicators */
@@ -48,8 +47,8 @@
 #define LED_NUM_LOCK_PIN  D4
 #define LED_PIN_ON_STATE  1
 
-/* Set Transient EEPROM size */
-#define TRANSIENT_EEPROM_SIZE 1536
+/* Set EEPROM size 
+#define TRANSIENT_EEPROM_SIZE 1536 */
 
 /* RGB LED Config */
 #define LED_MATRIX_ROWS MATRIX_ROWS
