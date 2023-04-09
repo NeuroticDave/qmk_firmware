@@ -177,7 +177,7 @@ ifeq ($(strip $(QUANTUM_PAINTER_ENABLE)), yes)
     include $(QUANTUM_DIR)/painter/rules.mk
 endif
 
-VALID_EEPROM_DRIVER_TYPES := vendor custom transient i2c spi wear_leveling
+VALID_EEPROM_DRIVER_TYPES := vendor custom transient i2c spi wear_leveling legacy_stm32_flash
 EEPROM_DRIVER ?= vendor
 ifeq ($(filter $(EEPROM_DRIVER),$(VALID_EEPROM_DRIVER_TYPES)),)
   $(call CATASTROPHIC_ERROR,Invalid EEPROM_DRIVER,EEPROM_DRIVER="$(EEPROM_DRIVER)" is not a valid EEPROM driver)
@@ -204,6 +204,12 @@ else
     OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_SPI
     QUANTUM_LIB_SRC += spi_master.c
     SRC += eeprom_driver.c eeprom_spi.c
+  else ifeq ($(strip $(EEPROM_DRIVER)), legacy_stm32_flash)
+    # STM32 Emulated EEPROM, backed by MCU flash (soon to be deprecated)
+    OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_STM32_FLASH_EMULATED
+    COMMON_VPATH += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/flash
+    COMMON_VPATH += $(DRIVER_PATH)/flash
+    SRC += eeprom_driver.c eeprom_stm32.c flash_stm32.c
   else ifeq ($(strip $(EEPROM_DRIVER)), transient)
     # Transient EEPROM implementation -- no data storage but provides runtime area for it
     OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_TRANSIENT
@@ -214,25 +220,30 @@ else
     ifeq ($(PLATFORM),AVR)
       # Automatically provided by avr-libc, nothing required
     else ifeq ($(PLATFORM),CHIBIOS)
-      ifneq ($(filter STM32F3xx_% STM32F1xx_% %_STM32F401xC %_STM32F401xE %_STM32F405xG %_STM32F411xE %_STM32F072xB %_STM32F042x6 %_GD32VF103xB %_GD32VF103x8, $(MCU_SERIES)_$(MCU_LDSCRIPT)),)
-        # Emulated EEPROM
-        OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_STM32_FLASH_EMULATED
+      ifneq ($(filter %_STM32F072xB %_STM32F042x6, $(MCU_SERIES)_$(MCU_LDSCRIPT)),)
+        # STM32 Emulated EEPROM, backed by MCU flash (soon to be deprecated)
+        OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_LEGACY_EMULATED_FLASH
         COMMON_VPATH += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/flash
         COMMON_VPATH += $(DRIVER_PATH)/flash
-        SRC += eeprom_driver.c eeprom_stm32.c flash_stm32.c
+        SRC += eeprom_driver.c eeprom_legacy_emulated_flash.c legacy_flash_ops.c
+      else ifneq ($(filter $(MCU_SERIES),STM32F1xx STM32F3xx STM32F4xx STM32L4xx STM32G4xx WB32F3G71xx WB32FQ95xx GD32VF103),)
+        # Wear-leveling EEPROM implementation, backed by MCU flash
+        OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_WEAR_LEVELING
+        SRC += eeprom_driver.c eeprom_wear_leveling.c
+        WEAR_LEVELING_DRIVER ?= embedded_flash
       else ifneq ($(filter $(MCU_SERIES),STM32L0xx STM32L1xx),)
         # True EEPROM on STM32L0xx, L1xx
         OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_STM32_L0_L1
         SRC += eeprom_driver.c eeprom_stm32_L0_L1.c
       else ifneq ($(filter $(MCU_SERIES),RP2040),)
-		# Wear-leveling EEPROM implementation, backed by RP2040 flash
-		OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_WEAR_LEVELING
-		SRC += eeprom_driver.c eeprom_wear_leveling.c
-        WEAR_LEVELING_DRIVER = rp2040_flash
+        # Wear-leveling EEPROM implementation, backed by RP2040 flash
+        OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_WEAR_LEVELING
+        SRC += eeprom_driver.c eeprom_wear_leveling.c
+        WEAR_LEVELING_DRIVER ?= rp2040_flash
       else ifneq ($(filter $(MCU_SERIES),KL2x K20x),)
         # Teensy EEPROM implementations
-        OPT_DEFS += -DEEPROM_TEENSY
-        SRC += eeprom_teensy.c
+        OPT_DEFS += -DEEPROM_KINETIS_FLEXRAM
+        SRC += eeprom_kinetis_flexram.c
       else
         # Fall back to transient, i.e. non-persistent
         OPT_DEFS += -DEEPROM_DRIVER -DEEPROM_TRANSIENT
@@ -276,7 +287,7 @@ ifneq ($(strip $(WEAR_LEVELING_DRIVER)),none)
       POST_CONFIG_H += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_PATH)/wear_leveling/wear_leveling_rp2040_flash_config.h
     else ifeq ($(strip $(WEAR_LEVELING_DRIVER)), legacy)
       COMMON_VPATH += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/flash
-      SRC += flash_stm32.c wear_leveling_legacy.c
+      SRC += legacy_flash_ops.c wear_leveling_legacy.c
       POST_CONFIG_H += $(PLATFORM_PATH)/$(PLATFORM_KEY)/$(DRIVER_DIR)/wear_leveling/wear_leveling_legacy_config.h
     else ifeq ($(strip $(WEAR_LEVELING_DRIVER)), sn32_flash)
       SRC += wear_leveling_sn32_flash.c
@@ -404,7 +415,7 @@ endif
 
 RGB_MATRIX_ENABLE ?= no
 
-VALID_RGB_MATRIX_TYPES := AW20216 IS31FL3731 IS31FL3733 IS31FL3737 IS31FL3741 IS31FL3742A IS31FL3743A IS31FL3745 IS31FL3746A CKLED2001 WS2812 SN32F24xB custom
+VALID_RGB_MATRIX_TYPES := AW20216 IS31FL3731 IS31FL3733 IS31FL3737 IS31FL3741 IS31FL3742A IS31FL3743A IS31FL3745 IS31FL3746A CKLED2001 WS2812 custom
 ifeq ($(strip $(RGB_MATRIX_ENABLE)), yes)
     ifeq ($(filter $(RGB_MATRIX_DRIVER),$(VALID_RGB_MATRIX_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid RGB_MATRIX_DRIVER,RGB_MATRIX_DRIVER="$(RGB_MATRIX_DRIVER)" is not a valid matrix type)
@@ -504,12 +515,6 @@ endif
         APA102_DRIVER_REQUIRED := yes
     endif
 
-    ifeq ($(strip $(RGB_MATRIX_DRIVER)), SN32F24xB)
-        OPT_DEFS += -DSN32F24xB
-        COMMON_VPATH += $(DRIVER_PATH)/led/sn32
-        SRC += rgb_matrix_sn32f24xb.c
-    endif
-
     ifeq ($(strip $(RGB_MATRIX_CUSTOM_KB)), yes)
         OPT_DEFS += -DRGB_MATRIX_CUSTOM_KB
     endif
@@ -521,12 +526,6 @@ endif
 
 ifeq ($(strip $(RGB_KEYCODES_ENABLE)), yes)
     SRC += $(QUANTUM_DIR)/process_keycode/process_rgb.c
-endif
-
-ifeq ($(strip $(PRINTING_ENABLE)), yes)
-    OPT_DEFS += -DPRINTING_ENABLE
-    SRC += $(QUANTUM_DIR)/process_keycode/process_printer.c
-    QUANTUM_LIB_SRC += uart.c
 endif
 
 VARIABLE_TRACE ?= no
@@ -651,9 +650,6 @@ ifneq ($(strip $(CUSTOM_MATRIX)), yes)
     ifneq ($(strip $(CUSTOM_MATRIX)), lite)
         # Include the standard or split matrix code if needed
         QUANTUM_SRC += $(QUANTUM_DIR)/matrix.c
-    else
-        # Filter out definitions not needed for lite matrix code
-        OPT_DEFS += -DMATRIX_LITE
     endif
 endif
 
@@ -883,7 +879,7 @@ ifeq ($(strip $(USBPD_ENABLE)), yes)
 endif
 
 BLUETOOTH_ENABLE ?= no
-VALID_BLUETOOTH_DRIVER_TYPES := BluefruitLE RN42 ItonBT ItonBTLowMem custom
+VALID_BLUETOOTH_DRIVER_TYPES := BluefruitLE RN42 custom
 ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
     ifeq ($(filter $(strip $(BLUETOOTH_DRIVER)),$(VALID_BLUETOOTH_DRIVER_TYPES)),)
         $(call CATASTROPHIC_ERROR,Invalid BLUETOOTH_DRIVER,BLUETOOTH_DRIVER="$(BLUETOOTH_DRIVER)" is not a valid Bluetooth driver type)
@@ -905,16 +901,6 @@ ifeq ($(strip $(BLUETOOTH_ENABLE)), yes)
         SRC += $(DRIVER_PATH)/bluetooth/rn42.c
         QUANTUM_LIB_SRC += uart.c
     endif
-
-	ifeq ($(strip $(BLUETOOTH_DRIVER)), ItonBT)
-        OPT_DEFS += -DBLUETOOTH_ITON_BT
-        SRC += $(DRIVER_PATH)/bluetooth/iton_bt.c
-    endif
-
-	ifeq ($(strip $(BLUETOOTH_DRIVER)), ItonBTLowMem)
-        OPT_DEFS += -DBLUETOOTH_ITON_BT_LOWMEM
-        SRC += $(DRIVER_PATH)/bluetooth/iton_bt_lowmem.c
-    endif
 endif
 
 ifeq ($(strip $(ENCODER_ENABLE)), yes)
@@ -922,5 +908,13 @@ ifeq ($(strip $(ENCODER_ENABLE)), yes)
     OPT_DEFS += -DENCODER_ENABLE
     ifeq ($(strip $(ENCODER_MAP_ENABLE)), yes)
         OPT_DEFS += -DENCODER_MAP_ENABLE
+    endif
+endif
+
+ifeq ($(strip $(OS_DETECTION_ENABLE)), yes)
+    SRC += $(QUANTUM_DIR)/os_detection.c
+    OPT_DEFS += -DOS_DETECTION_ENABLE
+    ifeq ($(strip $(OS_DETECTION_DEBUG_ENABLE)), yes)
+        OPT_DEFS += -DOS_DETECTION_DEBUG_ENABLE
     endif
 endif
