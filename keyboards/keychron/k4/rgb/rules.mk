@@ -32,6 +32,3 @@ RGB_MATRIX_DRIVER = SN32F24xB
 
 # Build iso by default
 DEFAULT_FOLDER = keychron/k4/rgb/iso
-
-# VIA
-#VIA_ENABLE = yes
