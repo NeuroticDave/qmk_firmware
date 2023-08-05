@@ -11,12 +11,11 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 */
-#include "k4.c"
-#include "k4.h"
-
 #include QMK_KEYBOARD_H
+#ifdef BLUETOOTH_ENABLE
 #include "iton_bt.h"
 #include "outputselect.h"
+#endif
 
 #define BT_PRO1 BT_PROFILE1
 #define BT_PRO2 BT_PROFILE2
@@ -89,12 +88,11 @@ void iton_bt_connection_successful() {
 bool dip_switch_update_user(uint8_t index, bool active){
   switch(index){
     case 0:
+        #ifdef BLUETOOTH_ENABLE
         if (active) {
             set_output(OUTPUT_NONE);
-            iton_bt_mode_bt();
         } else {
             set_output(OUTPUT_USB);
-            iton_bt_mode_usb();
         }
         #endif
       break;
